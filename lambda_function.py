@@ -16,17 +16,18 @@ import logging
 import boto3
 import sys
 import os
-
-# This class relies on the PyJWT module (https://pypi.org/project/PyJWT/).
 import jwt
-
-logger = logging.getLogger(__name__)
 
 try:
     from typing import Text
 except ImportError:
     logger.debug('# Python 3.5.0 and 3.5.1 have incompatible typing modules.', exc_info=True)
     from typing_extensions import Text
+
+# logger = logging.getLogger(__name__)import logging
+logger = logging.getLogger()
+logger.setLevel("INFO")
+
 
 ISSUER = "iss"
 EXPIRE_TIME = "exp"
@@ -35,8 +36,8 @@ SUBJECT = "sub"
 
 s3 = boto3.client('s3')
 
-str_bucket_name = "versent-lambda-layers"
-str_object_key = "rsa_key_dev.p8"
+str_bucket_name = os.environ['bucket']
+str_object_key = os.environ['object_key']
 str_authenticator = os.environ['authenticator']
 str_database = os.environ['database']
 str_region = os.environ['region']
@@ -44,6 +45,7 @@ str_schema = os.environ['schema']
 str_user = os.environ['user']
 str_warehouse = os.environ['warehouse']
 str_snowflake_account = os.environ['snowflake_account']
+
 
 
 # If you generated an encrypted private key, implement this method to return
@@ -64,7 +66,7 @@ class JWTGenerator(object):
     RENEWAL_DELTA = timedelta(minutes=54)  # Tokens will be renewed after 54 minutes
     ALGORITHM = "RS256"  # Tokens will be generated using RSA with SHA256
 
-    def __init__(self, account: Text, user: Text, bucket: Text, key: Text,
+    def __init__(self, account: Text, user: Text, bucket: Text, obj_key: Text,
                  lifetime: timedelta = LIFETIME, renewal_delay: timedelta = RENEWAL_DELTA
                  ):
         """
@@ -74,7 +76,7 @@ class JWTGenerator(object):
         account locator, exclude any region information from the account locator.
         :param user: The Snowflake username.
         :param bucket: bucket name to where the private key file is saved
-        :param key: file name of the private key file to be used for generating JWT
+        :param obj_key: file name of the private key file to be used for generating JWT
         :param lifetime: The number of minutes (as a timedelta) during which the key will be valid.
         :param renewal_delay: The number of minutes (as a timedelta) from now after which the JWT generator should
         renew the JWT.
@@ -94,12 +96,12 @@ class JWTGenerator(object):
         self.lifetime = lifetime
         self.renewal_delay = renewal_delay
         self.bucket = bucket
-        self.key = key
+        self.obj_key = obj_key
         self.renew_time = datetime.now(timezone.utc)
         self.token = None
 
         # Read the content of the file
-        response = s3.get_object(Bucket=bucket, Key=key)
+        response = s3.get_object(Bucket=self.bucket, Key= self.obj_key)
         pemlines = response['Body'].read()
         self.private_key = load_pem_private_key(pemlines, None, default_backend())
 
@@ -197,15 +199,24 @@ class JWTGenerator(object):
 
 
 def lambda_handler(event, lambda_context):
-    logging.basicConfig(stream=sys.stdout, level=logging.INFO)
+    
+    str_payload = event.get('email_address')
+    str_query = f"CALL create_user('{str_payload}')"
+    
+    print(str_payload)
+    print(str_query)
+    
+    # generating jwt token
+    logger.info('----- Generating jwt token -----')
 
     token = JWTGenerator(str_snowflake_account + "." + str_region,
                          str_user,
                          str_bucket_name,
                          str_object_key,
                          ).get_token()
-
+    
     # decode the private key
+    logger.info('----- Decoding the private key  -----')
     response = s3.get_object(Bucket=str_bucket_name, Key=str_object_key)
     p8_key = response['Body'].read()
     p_key = serialization.load_pem_private_key(
@@ -222,6 +233,7 @@ def lambda_handler(event, lambda_context):
     )
 
     # connect to snowflake
+    logger.info('----- Connecting into snowflake  -----')
     conn = snowflake.connector.connect(
         user=str_user,
         account=str_snowflake_account + "." + str_region,
@@ -235,7 +247,7 @@ def lambda_handler(event, lambda_context):
 
     # Verify the connection and execute the query
     cursor = conn.cursor()
-    cursor.execute("CALL create_user('test.acct@versent.com.au')")
+    cursor.execute(str_query)
     row = cursor.fetchone()
     print(row)
 
