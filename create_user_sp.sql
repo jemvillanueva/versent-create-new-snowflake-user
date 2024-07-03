@@ -1,55 +1,62 @@
-CREATE OR REPLACE PROCEDURE JEMV_DB.PUBLIC.CREATE_USER("EMAIL_ADDRESS" VARCHAR(16777216))
-RETURNS VARCHAR(16777216)
+CREATE OR REPLACE PROCEDURE create_user(email_address VARCHAR)
+RETURNS STRING
 LANGUAGE SQL
-EXECUTE AS OWNER
-AS '
+AS
+$$
 DECLARE
-        email := EMAIL_ADDRESS;
-        ident_email := ''\\"'' || email ||''\\"'';
-        fname :=SPLIT_PART(SPLIT_PART(email, ''@'', 1), ''.'', 1);
-        lname :=SPLIT_PART(SPLIT_PART(email, ''@'', 1), ''.'', 2);
+        email := email_address;
+        ident_email := '\"' || email ||'\"';
+        fname :=SPLIT_PART(SPLIT_PART(email, '@', 1), '.', 1);
+        lname :=SPLIT_PART(SPLIT_PART(email, '@', 1), '.', 2);
         user_id :=UPPER(CONCAT(fname, lname));
-        role_name :=CONCAT(''USERDB_'', user_id, ''_ROLE'');
-        db_name :=CONCAT(''USERDB_'', user_id);
+        role_name := '\"' || CONCAT('USERDB_', user_id, '_ROLE') ||'\"';
+        db_name := '\"' || CONCAT('USERDB_', user_id) ||'\"';
+        default_warehouse := '\"' || 'DEMO_WH' ||'\"';
+        str_comment  := '\"' || 'SSO user' ||'\"';
 
 BEGIN
 
     EXECUTE IMMEDIATE
         -- Create User DB and set role
-        '' CREATE ROLE IF NOT EXIST '' || role_name ;
+        'CREATE ROLE ' || role_name ;
+
     EXECUTE IMMEDIATE
-        '' CREATE DATABASE IF NOT EXIST '' || db_name;
+        'CREATE DATABASE ' || db_name;
+
     EXECUTE IMMEDIATE
-        '' GRANT ROLE '' || role_name || '' TO ROLE USERADMIN'';
+        'GRANT ROLE ' || role_name || ' TO ROLE USERADMIN';
 
 
     EXECUTE IMMEDIATE
-        '' GRANT OWNERSHIP ON DATABASE '' || db_name || '' TO ROLE '' || role_name;
+        'GRANT OWNERSHIP ON DATABASE' || db_name || 'TO ROLE' || role_name;
 
     EXECUTE IMMEDIATE
         -- Create the user
-        '' CREATE USER IF NOT EXIST '' || ident_email ||
-        '' COMMENT = SSO user'' ||
-        '' LOGIN_NAME = '' || email ||
-        '' DISPLAY_NAME = '' || email ||
-        '' FIRST_NAME = '' || fname ||
-        '' LAST_NAME = '' || lname ||
-        '' EMAIL = '' || email ||
-        '' DEFAULT_ROLE = '' || role_name ||
-        '' DEFAULT_WAREHOUSE = DEMO_WH'' ||
-        '' MUST_CHANGE_PASSWORD = TRUE'';
+        'CREATE USER ' || ident_email ||
+            ' COMMENT = ' || str_comment ||
+            ' LOGIN_NAME = ' || ident_email ||
+            ' DISPLAY_NAME = ' || ident_email ||
+            ' FIRST_NAME = ' || '\"' || fname ||'\"' ||
+            ' LAST_NAME = ' || '\"' || lname ||'\"' ||
+            ' EMAIL = ' || ident_email ||
+            ' DEFAULT_ROLE = ' || role_name ||
+            ' DEFAULT_WAREHOUSE = ' || default_warehouse ;
+
 
     EXECUTE IMMEDIATE
-        '' GRANT operate ON WAREHOUSE DEMO_WH TO ROLE '' || role_name;
+        'GRANT operate ON WAREHOUSE DEMO_WH TO ROLE' || role_name;
 
     EXECUTE IMMEDIATE
-        '' GRANT usage ON WAREHOUSE DEMO_WH TO ROLE '' || role_name;
+        'GRANT usage ON WAREHOUSE DEMO_WH TO ROLE' || role_name;
 
     EXECUTE IMMEDIATE
         -- Set role created for new user
-        '' GRANT ROLE '' || role_name || '' TO USER '' || ident_email;
+        'GRANT ROLE' || role_name || 'TO USER' || ident_email;
 
-    RETURN ''User with created successfully'';
+    RETURN 'User: ' || email || ' created successfully';
 
 END;
-';
+$$;
+
+-- CALL create_user('test12.acct@versent.com.au');
+
