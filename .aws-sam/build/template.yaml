@@ -1,0 +1,52 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+
+Globals:
+  Function:
+    Timeout: 3
+    MemorySize: 128
+Resources:
+  SnowflakeCreateUserLambdaFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: C:\Users\jemima.villanueva\Documents\Michaelangelo\codebase\versent-create-new-snowflake-user
+      Handler: lambda_function.lambda_handler
+      FunctionName: versent-create-new-snowflake-user
+      Runtime: python3.11
+      Timeout: 900
+      Architectures:
+      - x86_64
+      Environment:
+        Variables:
+          authenticator: SNOWFLAKE_JWT
+          bucket: versent-lambda-layers
+          database: USERDB_JEMIMAVILLANUEVA
+          object_key: rsa_key_dev.p8
+          region: ap-southeast-2
+          schema: PUBLIC
+          snowflake_account: versent_partner
+          user: jemima.villanueva@versent.com.sg
+          warehouse: DEMO_WH
+      EventInvokeConfig:
+        MaximumEventAgeInSeconds: 21600
+        MaximumRetryAttempts: 2
+      Layers:
+        - arn:aws:lambda:ap-southeast-2:362941308560:layer:python-layers:8 # to be changed to get the dynamic arn
+      PackageType: Zip
+      Role: arn:aws:iam::362941308560:role/service-role/AWSLambdaForSnowflakeAdmin # to be changed to get the dynamic arn
+    Metadata:
+      SamResourceId: SnowflakeCreateUserLambdaFunction
+Outputs:
+  SnowflakeCreateUserLambdaFunction:
+    Description: Lambda function running in python that generates token and calls
+      stored procedure in snowflake to create new user
+    Value:
+      Fn::GetAtt:
+      - SnowflakeCreateUserLambdaFunction
+      - Arn
+  SnowflakeCreateUserLambdaFunctionFunctionIamRole:
+    Description: IAM role created for this function
+    Value:
+      Fn::GetAtt:
+      - SnowflakeCreateUserLambdaFunction
+      - Arn

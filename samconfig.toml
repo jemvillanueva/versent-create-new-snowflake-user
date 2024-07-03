@@ -1,0 +1,11 @@
+version = 0.1
+[default.deploy.parameters]
+stack_name = "snowflake-create-user"
+resolve_s3 = false
+s3_bucket = "versent-lambda-layers"
+s3_prefix = "snowflake-create-user"
+region = "ap-southeast-2"
+profile = "stax-stax-au1-versent"
+confirm_changeset = true
+capabilities = "CAPABILITY_IAM"
+image_repositories = []
