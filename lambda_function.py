@@ -163,12 +163,6 @@ class JWTGenerator(object):
             if isinstance(token, bytes):
                 token = token.decode('utf-8')
             self.token = token
-            logger.info("Generated a JWT with the following payload: %s",
-                        jwt.decode(self.token,
-                                   key=self.private_key.public_key(),
-                                   algorithms=[JWTGenerator.ALGORITHM]
-                                   )
-                        )
 
         return self.token
 
@@ -192,7 +186,9 @@ class JWTGenerator(object):
 
 
 def lambda_handler(event, lambda_context):
-    
+
+    logger.info(event)
+
     str_payload = event.get('email_address')
     str_query = f"CALL create_user('{str_payload}')"
 
@@ -242,4 +238,4 @@ def lambda_handler(event, lambda_context):
     print(row)
 
 if __name__ == "lambda_handler":
-    lambda_handler()
+    lambda_handler(event, lambda_context)
