@@ -82,12 +82,6 @@ class JWTGenerator(object):
         renew the JWT.
         """
 
-        logger.info(
-            """Creating JWTGenerator with arguments
-            account : %s, user : %s, lifetime : %s, renewal_delay : %s""",
-            account, user, lifetime, renewal_delay
-        )
-
         # Construct the fully qualified name of the user in uppercase.
         self.account = self.prepare_account_name_for_jwt(account)
         self.user = user.upper()
@@ -193,7 +187,6 @@ class JWTGenerator(object):
 
         # Base64-encode the value and prepend the prefix 'SHA256:'.
         public_key_fp = 'SHA256:' + base64.b64encode(sha256hash.digest()).decode('utf-8')
-        logger.info("Public key fingerprint is %s", public_key_fp)
 
         return public_key_fp
 
@@ -202,10 +195,7 @@ def lambda_handler(event, lambda_context):
     
     str_payload = event.get('email_address')
     str_query = f"CALL create_user('{str_payload}')"
-    
-    print(str_payload)
-    print(str_query)
-    
+
     # generating jwt token
     logger.info('----- Generating jwt token -----')
 
