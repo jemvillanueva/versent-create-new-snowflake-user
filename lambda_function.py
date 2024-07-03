@@ -241,6 +241,5 @@ def lambda_handler(event, lambda_context):
     row = cursor.fetchone()
     print(row)
 
-
 if __name__ == "lambda_handler":
     lambda_handler()
