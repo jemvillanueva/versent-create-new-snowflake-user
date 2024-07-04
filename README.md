@@ -47,12 +47,12 @@ pip install -r requirements.txt
     ```
    aws sts get-caller-identity --profile stax-profile-name
    ```
-4. Open cmd on the repository path to start deploying if there are changes on the code or config of the resources
+4. Open cmd on the repository path to start deploying if there are changes on the code or config of the resources.
     For the very first build, execute the command below to create samconfig.toml file which stores all the default config
     ```
    sam build --guided --profile stax-profile-name
    ```
-   For the succeeding build, the command below can be used
+   For the succeeding build, the command below can be used.
     ```
    sam build --profile stax-profile-name
    ```
