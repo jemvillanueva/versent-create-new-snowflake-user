@@ -19,24 +19,23 @@ pip install -r requirements.txt
 ```
 ### How to use AWS CLI to call Snowflake stored procedure
 
-1. Log in to stax2aws ans select the staxid-admin-role when prompted
-2. aws sts
-3. Use below template to call invoke the lambda function
-   On the payload parameter sample, change the email address with the correct email address for the new user
-    ```
-   aws lambda invoke \
-   --profile stax-stax-au1-versent \
-   --region ap-southeast-2 \
-   --function-name  versent-create-new-snowflake-user out \
-   --cli-binary-format raw-in-base64-out \
-   --payload '{"email_address": "it_support_test7.acct@versent.com.au"}' \
-   --log-type Tail \
-   --query 'LogResult' \
-   --output text --cli-binary-format raw-in-base64-out | base64 --decode
+1. Log in to stax2aws and select the staxid-admin-role when prompted. </br>
+   Change the stax region, stax organization and profile.
+   ```
+   stax2aws login --installation stax-au1 --org-alias versent -f
+   ```
+   ```
+   aws sts get-caller-identity --profile stax-stax-au1-versent
+   ```
+2. Run the shell script to invoke the lambda function. </br>
+   In the sample, replace the parameters with the correct the profile name, region, and email address.
+   ```
+   ./create_new_user.sh stax-stax-au1-versent ap-southeast-2 it_support_test8.acct@versent.com
    ```
    Execution logs will be visible in the terminal.
 
 ### AWS SAM Deployment
+   Follow the deployment steps using AWS SAM if there will be updates on the script of with the libraries.
 
 1. Clone the repository to local machine
 2. Log in to stax2aws and select the staxid-admin-role for the role when prompted 
