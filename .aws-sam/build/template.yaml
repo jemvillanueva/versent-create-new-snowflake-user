@@ -41,10 +41,9 @@ Resources:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
       Layers:
-#        - arn:aws:lambda:ap-southeast-2:362941308560:layer:python-layers:8 # to be changed to get the dynamic arn
         - !Ref SnowflakePythonLayer
       PackageType: Zip
-      Role: arn:aws:iam::362941308560:role/service-role/AWSLambdaForSnowflakeAdmin # to be changed to get the dynamic arn
+      Role: arn:aws:iam::362941308560:role/service-role/AWSLambdaForSnowflakeAdmin
     Metadata:
       SamResourceId: SnowflakeCreateUserLambdaFunction
 Outputs:
