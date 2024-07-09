@@ -3,6 +3,8 @@
 Prerequisites:
 1. AWS CLI installation
 2. stax2aws (https://support.stax.io/hc/en-us/articles/4428445276943-About-stax2aws)
+3. WSL installation ( for windows user)
+4. 
 
 
 ### Setup python virtual environment
