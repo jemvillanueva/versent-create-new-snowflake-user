@@ -5,6 +5,14 @@ Globals:
   Function:
     MemorySize: 128
 Resources:
+  SnowflakePythonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: snowflake-python-layer
+      Description: python layer for snowflake
+      ContentUri: s3://versent-lambda-layers/python-layers.zip
+      CompatibleRuntimes:
+        - python3.11
   SnowflakeCreateUserLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:

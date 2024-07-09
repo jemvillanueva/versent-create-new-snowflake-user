@@ -6,6 +6,31 @@ Globals:
     Timeout: 3
     MemorySize: 128
 Resources:
+  SnoflakeCreateUserLambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument: Json
+      Description: String
+      ManagedPolicyArns:
+        - String
+      MaxSessionDuration: Integer
+      Path: String
+      PermissionsBoundary: String
+      Policies:
+        - Policy
+      RoleName: String
+      Tags:
+        - Tag
+  SnowflakePythonLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: snowflake-python-layer
+      Description: python layer for snowflake
+      ContentUri: s3://versent-lambda-layers/python-layers.zip
+      CompatibleRuntimes:
+        - python3.11
+      CompatibleArchitectures:
+        - x86_64
   SnowflakeCreateUserLambdaFunction:
     Type: AWS::Serverless::Function
     Properties:
@@ -15,7 +40,7 @@ Resources:
       Runtime: python3.11
       Timeout: 900
       Architectures:
-      - x86_64
+        - x86_64
       Environment:
         Variables:
           authenticator: SNOWFLAKE_JWT
@@ -31,7 +56,8 @@ Resources:
         MaximumEventAgeInSeconds: 21600
         MaximumRetryAttempts: 2
       Layers:
-        - arn:aws:lambda:ap-southeast-2:362941308560:layer:python-layers:8 # to be changed to get the dynamic arn
+#        - arn:aws:lambda:ap-southeast-2:362941308560:layer:python-layers:8 # to be changed to get the dynamic arn
+        - !Ref SnowflakePythonLayer
       PackageType: Zip
       Role: arn:aws:iam::362941308560:role/service-role/AWSLambdaForSnowflakeAdmin # to be changed to get the dynamic arn
     Metadata:
@@ -42,11 +68,11 @@ Outputs:
       stored procedure in snowflake to create new user
     Value:
       Fn::GetAtt:
-      - SnowflakeCreateUserLambdaFunction
-      - Arn
+        - SnowflakeCreateUserLambdaFunction
+        - Arn
   SnowflakeCreateUserLambdaFunctionFunctionIamRole:
     Description: IAM role created for this function
     Value:
       Fn::GetAtt:
-      - SnowflakeCreateUserLambdaFunction
-      - Arn
+        - SnowflakeCreateUserLambdaFunction
+        - Arn
